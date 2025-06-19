@@ -32,6 +32,10 @@ for (let c = 0; c < brickColumnCount; c++) {
   }
 }
 
+// Puntaje y vidas
+let score = 0;
+let lives = 3;
+
 function drawBall() {
   ctx.beginPath();
   ctx.arc(ballX, ballY, ballRadius, 0, Math.PI * 2);
@@ -66,11 +70,51 @@ function drawBricks() {
   }
 }
 
+function drawScore() {
+  ctx.font = "16px Arial";
+  ctx.fillStyle = "#ffffff";
+  ctx.fillText("Puntos: " + score, 8, 20);
+}
+
+function drawLives() {
+  ctx.font = "16px Arial";
+  ctx.fillStyle = "#ffffff";
+  ctx.fillText("Vidas: " + lives, canvas.width - 85, 20);
+}
+
+function detectCollision() {
+  for (let c = 0; c < brickColumnCount; c++) {
+    for (let r = 0; r < brickRowCount; r++) {
+      const b = bricks[c][r];
+      if (b.visible) {
+        if (
+          ballX > b.x &&
+          ballX < b.x + brickWidth &&
+          ballY > b.y &&
+          ballY < b.y + brickHeight
+        ) {
+          ballSpeedY *= -1;
+          b.visible = false;
+          score++;
+
+          if (score === brickRowCount * brickColumnCount) {
+            alert("¡Ganaste!");
+            document.location.reload();
+          }
+        }
+      }
+    }
+  }
+}
+
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   drawBall();
   drawPaddle();
   drawBricks();
+  drawScore();
+  drawLives();
+  detectCollision();
 
   // Movimiento de la pelota
   ballX += ballSpeedX;
@@ -93,6 +137,21 @@ function draw() {
     ballX < paddleX + paddleWidth
   ) {
     ballSpeedY *= -1;
+  }
+
+  // Abajo: perder vida
+  if (ballY + ballRadius > canvas.height) {
+    lives--;
+    if (!lives) {
+      alert("¡Game Over!");
+      document.location.reload();
+    } else {
+      ballX = canvas.width / 2;
+      ballY = canvas.height - 30;
+      ballSpeedX = 4;
+      ballSpeedY = -4;
+      paddleX = (canvas.width - paddleWidth) / 2;
+    }
   }
 
   // Movimiento de la paleta
